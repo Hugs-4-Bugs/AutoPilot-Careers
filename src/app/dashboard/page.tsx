@@ -62,7 +62,7 @@ export default function DashboardPage() {
       return [
         { title: 'Applications Sent', value: '0', icon: Mail },
         { title: 'Interviews Scheduled', value: '0', icon: CheckCircle2 },
-        { title: 'Active Searches', value: '0', icon: Briefcase },
+        { title: 'Offers Received', value: '0', icon: Briefcase },
       ];
     }
     const totalSent = allApplications.length;
