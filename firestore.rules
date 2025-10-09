@@ -1,196 +1,54 @@
 /**
- * @fileOverview
- * This ruleset enforces a strict user-ownership model for most collections,
- * ensuring that only the authenticated user can access their own data.
- *
- * Data Structure:
- * - /users/{userId}: Stores user profile information.
- * - /users/{userId}/resumeFiles/{resumeFileId}: Stores resume files for a specific user.
- * - /users/{userId}/coverLetterTemplates/{coverLetterTemplateId}: Stores cover letter templates for a specific user.
- * - /users/{userId}/jobApplications/{jobApplicationId}: Stores job applications for a specific user.
- * - /skillTags/{skillTagId}: Stores skill tags, publicly accessible.
- * - /jobPostings/{jobPostingId}: Stores job postings, publicly accessible.
- *
- * Key Security Decisions:
- * - User-owned data (profiles, resume files, cover letter templates, job applications)
- *   is strictly controlled by the user ID in the path.
- * - Listing operations are enabled for user-owned subcollections, allowing users to view their own data.
- * - The skillTags and jobPostings collections are publicly readable but writes are not authorized in the prototype phase, since there is no clear owner.
- *
- * Denormalization for Authorization:
- * - The data structure inherently avoids the need for denormalization.  User ownership is
- *   established via the hierarchical structure and the `userId` path parameter.
- *   No `get()` calls are needed in the rules.
+ * @file Firestore Security Rules
+ * @core_philosophy This ruleset enforces a strict user-ownership model.  Each user can only access their own data. Data validation is relaxed in this prototyping phase, focusing on authorization.
+ * @data_structure All data is nested under /users/{userId}, ensuring data isolation. User profiles are stored directly under the /users/{userId} path, and job applications are stored as subcollections under each user's profile.
+ * @key_security_decisions User listing is disallowed.  All write operations are validated against the authenticated user's ID to prevent unauthorized data modification.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages user profile documents.
+     * @description Protects user profile information, ensuring only the owning user can read and write their own profile.
      * @path /users/{userId}
-     * @allow (create) User 'test_user' with ID matching {userId} can create their profile.
-     * @allow (get) User 'test_user' can read their profile.
-     * @allow (update) User 'test_user' can update their profile.
-     * @allow (delete) User 'test_user' can delete their profile.
-     * @deny (create) User 'another_user' attempts to create a profile with {userId} belonging to 'test_user'.
-     * @deny (update) User 'another_user' attempts to update 'test_user's profile.
-     * @deny (delete) User 'another_user' attempts to delete 'test_user's profile.
-     * @principle Enforces document ownership, ensuring only the authenticated user can manage their profile.
+     * @allow (get, create, update, delete) User with ID 'userId' can perform these operations on their own profile.
+     * @deny (get, create, update, delete) Any other user attempting to access this profile will be denied.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      // Helper function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Helper function to check if the user is the owner of the document
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      //Helper function to check if the user is the owner of the document and that the document exists
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
-      // Allow a user to read their own profile
       allow get: if isOwner(userId);
-
-      // Allow a user to create their own profile if the userId matches their auth uid.
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-
-      // Allow a user to update their own profile
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-
-      // Allow a user to delete their own profile
-      allow delete: if isExistingOwner(userId);
-
-      // Listing is not allowed on the root `/users` collection.
       allow list: if false;
-    }
-
-    /**
-     * @description Manages resume files for a specific user.
-     * @path /users/{userId}/resumeFiles/{resumeFileId}
-     * @allow (create) User 'test_user' can create a resume file under their profile.
-     * @allow (get) User 'test_user' can read their resume file.
-     * @allow (update) User 'test_user' can update their resume file.
-     * @allow (delete) User 'test_user' can delete their resume file.
-     * @deny (create) User 'another_user' attempts to create a resume file under 'test_user's profile.
-     * @deny (update) User 'another_user' attempts to update 'test_user's resume file.
-     * @deny (delete) User 'another_user' attempts to delete 'test_user's resume file.
-     * @principle Enforces document ownership, restricting resume file access to the owning user.
-     */
-    match /users/{userId}/resumeFiles/{resumeFileId} {
-      // Allow reads to owners
-      allow get: if isOwner(userId);
-
-      // Allow creates to owners
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-
-      // Allow updates to owners
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-
-      // Allow deletes to owners
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
-
-      // Listing is allowed for owners
-      allow list: if isOwner(userId);
     }
 
     /**
-     * @description Manages cover letter templates for a specific user.
-     * @path /users/{userId}/coverLetterTemplates/{coverLetterTemplateId}
-     * @allow (create) User 'test_user' can create a cover letter template under their profile.
-     * @allow (get) User 'test_user' can read their cover letter template.
-     * @allow (update) User 'test_user' can update their cover letter template.
-     * @allow (delete) User 'test_user' can delete their cover letter template.
-     * @deny (create) User 'another_user' attempts to create a cover letter template under 'test_user's profile.
-     * @deny (update) User 'another_user' attempts to update 'test_user's cover letter template.
-     * @deny (delete) User 'another_user' attempts to delete 'test_user's cover letter template.
-     * @principle Enforces document ownership, restricting cover letter template access to the owning user.
+     * @description Protects job applications, ensuring only the owning user can read and write job applications under their profile.
+     * @path /users/{userId}/jobApplications/{applicationId}
+     * @allow (get, list, create, update, delete) User with ID 'userId' can perform these operations on job applications under their profile.
+     * @deny (get, list, create, update, delete) Any other user attempting to access these job applications will be denied.
+     * @principle Enforces document ownership for all operations on job applications.
      */
-    match /users/{userId}/coverLetterTemplates/{coverLetterTemplateId} {
-      // Allow reads to owners
+    match /users/{userId}/jobApplications/{applicationId} {
       allow get: if isOwner(userId);
-
-      // Allow creates to owners
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-
-      // Allow updates to owners
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-
-      // Allow deletes to owners
-      allow delete: if isExistingOwner(userId);
-
-      // Listing is allowed for owners
       allow list: if isOwner(userId);
-    }
-
-    /**
-     * @description Manages skill tags.
-     * @path /skillTags/{skillTagId}
-     * @allow (get) Any user can read any skill tag.
-     * @allow (list) Any user can list skill tags.
-     * @deny (create) No user can create skill tags without specific authorization (TODO).
-     * @deny (update) No user can update skill tags without specific authorization (TODO).
-     * @deny (delete) No user can delete skill tags without specific authorization (TODO).
-     * @principle Public read access for skill tags, but write access is restricted.
-     */
-    match /skillTags/{skillTagId} {
-      // Allow public read access
-      allow get, list: if true;
-
-      // Writes are denied since there is no clear owner.
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Manages job applications for a specific user.
-     * @path /users/{userId}/jobApplications/{jobApplicationId}
-     * @allow (create) User 'test_user' can create a job application under their profile.
-     * @allow (get) User 'test_user' can read their job application.
-     * @allow (update) User 'test_user' can update their job application.
-     * @allow (delete) User 'test_user' can delete their job application.
-     * @deny (create) User 'another_user' attempts to create a job application under 'test_user's profile.
-     * @deny (update) User 'another_user' attempts to update 'test_user's job application.
-     * @deny (delete) User 'another_user' attempts to delete 'test_user's job application.
-     * @principle Enforces document ownership, restricting job application access to the owning user.
-     */
-    match /users/{userId}/jobApplications/{jobApplicationId} {
-      // Allow reads to owners
-      allow get: if isOwner(userId);
-
-      // Allow creates to owners
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-
-      // Allow updates to owners
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-
-      // Allow deletes to owners
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
-
-      // Listing is allowed for owners
-      allow list: if isOwner(userId);
     }
 
-    /**
-     * @description Manages job postings.
-     * @path /jobPostings/{jobPostingId}
-     * @allow (get) Any user can read any job posting.
-     * @allow (list) Any user can list job postings.
-     * @deny (create) No user can create job postings without specific authorization (TODO).
-     * @deny (update) No user can update job postings without specific authorization (TODO).
-     * @deny (delete) No user can delete job postings without specific authorization (TODO).
-     * @principle Public read access for job postings, but write access is restricted.
-     */
-    match /jobPostings/{jobPostingId} {
-      // Allow public read access
-      allow get, list: if true;
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
-      // Writes are denied since there is no clear owner.
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
     }
   }
 }
