@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { useUser, useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -28,7 +28,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { setDocumentNonBlocking } from '@/firebase';
 
 const profileSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -80,6 +79,12 @@ export default function ProfilePage() {
         ...userProfile,
         email: user?.email || '',
       });
+    } else if (user) {
+      reset({
+        email: user.email || '',
+        firstName: user.displayName?.split(' ')[0] || '',
+        lastName: user.displayName?.split(' ')[1] || '',
+      })
     }
   }, [userProfile, user, reset]);
 

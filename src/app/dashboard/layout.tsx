@@ -2,13 +2,11 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { useUser, useDoc } from '@/firebase';
-import { useFirestore } from '@/firebase';
+import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Header } from '@/components/dashboard/header';
 import { MainNav } from '@/components/dashboard/main-nav';
 import { Loader2 } from 'lucide-react';
-import { useMemoFirebase } from '@/firebase';
 
 export default function DashboardLayout({
   children,
@@ -39,12 +37,16 @@ export default function DashboardLayout({
     }
   }, [user, userProfile, isProfileLoading, pathname, router]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || (user && isProfileLoading)) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
+  }
+  
+  if (!user) {
+    return null;
   }
 
   return (

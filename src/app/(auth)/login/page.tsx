@@ -5,11 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  signInWithEmailAndPassword,
-} from '@/firebase/auth/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useAuth } from '@/firebase';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -57,7 +54,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
-      router.push('/dashboard');
+      router.push('/dashboard/pricing');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -73,7 +70,7 @@ export default function LoginPage() {
     setGoogleLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
-      router.push('/dashboard');
+      router.push('/dashboard/pricing');
     } catch (error: any) {
       toast({
         variant: 'destructive',

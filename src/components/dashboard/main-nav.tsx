@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
+   { href: '/dashboard/pricing', label: 'Pricing', icon: BadgeDollarSign },
   {
     href: '/dashboard/ai-tools',
     label: 'AI Tools',

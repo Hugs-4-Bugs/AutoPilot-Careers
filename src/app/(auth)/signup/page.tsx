@@ -11,9 +11,8 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from 'firebase/auth';
-import { useAuth } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -78,12 +77,16 @@ export default function SignupPage() {
       const user = userCredential.user;
 
       const userProfileRef = doc(firestore, 'users', user.uid);
-      await setDoc(userProfileRef, {
-        id: user.uid,
-        firstName: values.firstName,
-        lastName: values.lastName,
-        email: user.email,
-      });
+      setDocumentNonBlocking(
+        userProfileRef,
+        {
+          id: user.uid,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: user.email,
+        },
+        { merge: true }
+      );
 
       await sendEmailVerification(user);
       setShowVerification(true);
@@ -106,7 +109,7 @@ export default function SignupPage() {
       const userProfileRef = doc(firestore, 'users', user.uid);
       const [firstName, lastName] = user.displayName?.split(' ') || ['', ''];
 
-      await setDoc(
+      setDocumentNonBlocking(
         userProfileRef,
         {
           id: user.uid,
@@ -116,8 +119,9 @@ export default function SignupPage() {
         },
         { merge: true }
       );
-      router.push('/dashboard/profile');
-    } catch (error: any) {
+      router.push('/dashboard/pricing');
+    } catch (error: any)
+{
       toast({
         variant: 'destructive',
         title: 'Google Sign-In Failed',
@@ -143,8 +147,8 @@ export default function SignupPage() {
           <Alert>
             <AlertTitle>Email Sent!</AlertTitle>
             <AlertDescription>
-              You can close this tab now. Once you verify your email, you will be
-              able to log in.
+              You can close this tab now. Once you verify your email, you will
+              be able to log in.
             </AlertDescription>
           </Alert>
           <div className="mt-4 text-center text-sm">
