@@ -1,3 +1,8 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,7 +13,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Check } from 'lucide-react';
-import Link from 'next/link';
 
 const pricingTiers = [
   {
@@ -22,7 +26,6 @@ const pricingTiers = [
       'Limited Job Search Filters',
     ],
     cta: 'Get Started',
-    isPrimary: false,
   },
   {
     name: 'Starter',
@@ -36,7 +39,6 @@ const pricingTiers = [
       'Standard Job Search Filters',
     ],
     cta: 'Get Started',
-    isPrimary: false,
   },
   {
     name: 'Pro',
@@ -51,7 +53,6 @@ const pricingTiers = [
       'Priority Support',
     ],
     cta: 'Upgrade to Pro',
-    isPrimary: true,
   },
   {
     name: 'Enterprise',
@@ -65,11 +66,12 @@ const pricingTiers = [
       'Dedicated Account Manager',
     ],
     cta: 'Contact Sales',
-    isPrimary: false,
   },
 ];
 
 export function Pricing() {
+  const [selectedTier, setSelectedTier] = useState('Pro');
+
   return (
     <section id="pricing" className="bg-card py-16 md:py-24">
       <div className="container mx-auto max-w-7xl px-4 md:px-6">
@@ -82,12 +84,16 @@ export function Pricing() {
           </p>
         </div>
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {pricingTiers.map((tier) => (
+          {pricingTiers.map(tier => (
             <Card
               key={tier.name}
-              className={`flex flex-col ${
-                tier.isPrimary ? 'border-primary ring-2 ring-primary' : ''
-              }`}
+              className={cn(
+                'flex cursor-pointer flex-col transition-all',
+                selectedTier === tier.name
+                  ? 'border-primary ring-2 ring-primary'
+                  : 'hover:scale-105'
+              )}
+              onClick={() => setSelectedTier(tier.name)}
             >
               <CardHeader>
                 <CardTitle className="text-2xl">{tier.name}</CardTitle>
@@ -101,7 +107,7 @@ export function Pricing() {
               </CardHeader>
               <CardContent className="flex-1 space-y-4">
                 <ul className="space-y-3">
-                  {tier.features.map((feature) => (
+                  {tier.features.map(feature => (
                     <li key={feature} className="flex items-start gap-2">
                       <Check className="mt-1 h-5 w-5 shrink-0 text-primary" />
                       <span>{feature}</span>
@@ -112,7 +118,7 @@ export function Pricing() {
               <CardFooter>
                 <Button
                   className="w-full"
-                  variant={tier.isPrimary ? 'default' : 'outline'}
+                  variant={selectedTier === tier.name ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/signup">{tier.cta}</Link>
