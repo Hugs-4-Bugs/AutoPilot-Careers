@@ -1,0 +1,400 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile in the AutoPilot Careers application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "User's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "User's last name."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "User's phone number."
+        },
+        "locationPreferences": {
+          "type": "string",
+          "description": "User's preferred job locations."
+        },
+        "availability": {
+          "type": "string",
+          "description": "User's job availability (e.g., full-time, part-time)."
+        },
+        "experience": {
+          "type": "string",
+          "description": "User's work experience summary."
+        },
+        "keywords": {
+          "type": "string",
+          "description": "Keywords relevant to the user's job search."
+        },
+        "resumeFileIds": {
+          "type": "array",
+          "description": "References to ResumeFile entities. (Relationship: UserProfile 1:N ResumeFile)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coverLetterTemplateIds": {
+          "type": "array",
+          "description": "References to CoverLetterTemplate entities. (Relationship: UserProfile 1:N CoverLetterTemplate)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skillTagIds": {
+          "type": "array",
+          "description": "References to SkillTag entities. (Relationship: UserProfile N:N SkillTag)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "salaryRangeMin": {
+          "type": "number",
+          "description": "Minimum desired salary."
+        },
+        "salaryRangeMax": {
+          "type": "number",
+          "description": "Maximum desired salary."
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email"
+      ]
+    },
+    "ResumeFile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ResumeFile",
+      "type": "object",
+      "description": "Represents a resume file uploaded by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the resume file."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N ResumeFile)"
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Name of the resume file."
+        },
+        "fileSizeBytes": {
+          "type": "number",
+          "description": "Size of the resume file in bytes."
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Date and time when the resume file was uploaded.",
+          "format": "date-time"
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL where the resume file is stored.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "fileName",
+        "fileSizeBytes",
+        "uploadDate",
+        "fileUrl"
+      ]
+    },
+    "CoverLetterTemplate": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CoverLetterTemplate",
+      "type": "object",
+      "description": "Represents a cover letter template created by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the cover letter template."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N CoverLetterTemplate)"
+        },
+        "templateName": {
+          "type": "string",
+          "description": "Name of the cover letter template."
+        },
+        "templateContent": {
+          "type": "string",
+          "description": "Content of the cover letter template."
+        },
+        "creationDate": {
+          "type": "string",
+          "description": "Date and time when the cover letter template was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "templateName",
+        "templateContent",
+        "creationDate"
+      ]
+    },
+    "SkillTag": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SkillTag",
+      "type": "object",
+      "description": "Represents a skill tag associated with a user profile.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the skill tag."
+        },
+        "tagName": {
+          "type": "string",
+          "description": "Name of the skill tag."
+        },
+        "userProfileIds": {
+          "type": "array",
+          "description": "References to UserProfile entities. (Relationship: UserProfile N:N SkillTag)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "tagName"
+      ]
+    },
+    "JobApplication": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "JobApplication",
+      "type": "object",
+      "description": "Represents a job application submitted by the user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the job application."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N JobApplication)"
+        },
+        "jobPostingId": {
+          "type": "string",
+          "description": "Reference to JobPosting. (Relationship: JobPosting 1:N JobApplication)"
+        },
+        "applicationDate": {
+          "type": "string",
+          "description": "Date and time when the application was submitted.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the job application (e.g., submitted, viewed, interviewed, rejected)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any notes or comments related to the application."
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "jobPostingId",
+        "applicationDate",
+        "status"
+      ]
+    },
+    "JobPosting": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "JobPosting",
+      "type": "object",
+      "description": "Represents a job posting found on a job board.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the job posting."
+        },
+        "jobBoard": {
+          "type": "string",
+          "description": "The job board where the posting was found (e.g., LinkedIn, Indeed)."
+        },
+        "jobTitle": {
+          "type": "string",
+          "description": "Title of the job posting."
+        },
+        "company": {
+          "type": "string",
+          "description": "Company offering the job."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the job."
+        },
+        "postingUrl": {
+          "type": "string",
+          "description": "URL of the job posting.",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the job posting."
+        },
+        "postedDate": {
+          "type": "string",
+          "description": "Date when the job was posted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "jobBoard",
+        "jobTitle",
+        "company",
+        "location",
+        "postingUrl",
+        "description",
+        "postedDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information.  Owned by the user identified by {userId}.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumeFiles/{resumeFileId}",
+        "definition": {
+          "entityName": "ResumeFile",
+          "schema": {
+            "$ref": "#/backend/entities/ResumeFile"
+          },
+          "description": "Stores resume files uploaded by users.  Owned by the user identified by {userId}.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "resumeFileId",
+              "description": "The unique identifier of the resume file."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/coverLetterTemplates/{coverLetterTemplateId}",
+        "definition": {
+          "entityName": "CoverLetterTemplate",
+          "schema": {
+            "$ref": "#/backend/entities/CoverLetterTemplate"
+          },
+          "description": "Stores cover letter templates created by users. Owned by the user identified by {userId}.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "coverLetterTemplateId",
+              "description": "The unique identifier of the cover letter template."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/skillTags/{skillTagId}",
+        "definition": {
+          "entityName": "SkillTag",
+          "schema": {
+            "$ref": "#/backend/entities/SkillTag"
+          },
+          "description": "Stores skill tags.  Since SkillTags can be used by multiple users, this is a top-level collection. Access is unrestricted.",
+          "params": [
+            {
+              "name": "skillTagId",
+              "description": "The unique identifier of the skill tag."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/jobApplications/{jobApplicationId}",
+        "definition": {
+          "entityName": "JobApplication",
+          "schema": {
+            "$ref": "#/backend/entities/JobApplication"
+          },
+          "description": "Stores job applications submitted by users. Owned by the user identified by {userId}.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "jobApplicationId",
+              "description": "The unique identifier of the job application."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/jobPostings/{jobPostingId}",
+        "definition": {
+          "entityName": "JobPosting",
+          "schema": {
+            "$ref": "#/backend/entities/JobPosting"
+          },
+          "description": "Stores job postings. Access is unrestricted.",
+          "params": [
+            {
+              "name": "jobPostingId",
+              "description": "The unique identifier of the job posting."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability, aligning with the core design principles. User-owned data is stored under the `/users/{userId}` path to simplify ownership-based security rules.  Authorization independence is achieved by avoiding `get()` calls in security rules, achieved through the inherent structure and, where necessary, denormalization (although denormalization is not explicitly required in the current dataset due to clear hierarchical ownership).  Specifically, the ResumeFile, CoverLetterTemplate, and JobApplication entities are placed as subcollections of the UserProfile, establishing a clear ownership hierarchy and eliminating the need for authorization checks based on the content of other documents. The structure also inherently supports QAPs (Rules Are Not Filters) because listing documents in user-specific collections is naturally secure, as only the authenticated user can access their own data. Segregation is used to ensure that all documents within a given collection share the same security requirements.  The lack of collaborative entities simplifies the model and its security posture."
+  }
+}

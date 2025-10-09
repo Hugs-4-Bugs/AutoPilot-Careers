@@ -1,0 +1,196 @@
+/**
+ * @fileOverview
+ * This ruleset enforces a strict user-ownership model for most collections,
+ * ensuring that only the authenticated user can access their own data.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information.
+ * - /users/{userId}/resumeFiles/{resumeFileId}: Stores resume files for a specific user.
+ * - /users/{userId}/coverLetterTemplates/{coverLetterTemplateId}: Stores cover letter templates for a specific user.
+ * - /users/{userId}/jobApplications/{jobApplicationId}: Stores job applications for a specific user.
+ * - /skillTags/{skillTagId}: Stores skill tags, publicly accessible.
+ * - /jobPostings/{jobPostingId}: Stores job postings, publicly accessible.
+ *
+ * Key Security Decisions:
+ * - User-owned data (profiles, resume files, cover letter templates, job applications)
+ *   is strictly controlled by the user ID in the path.
+ * - Listing operations are enabled for user-owned subcollections, allowing users to view their own data.
+ * - The skillTags and jobPostings collections are publicly readable but writes are not authorized in the prototype phase, since there is no clear owner.
+ *
+ * Denormalization for Authorization:
+ * - The data structure inherently avoids the need for denormalization.  User ownership is
+ *   established via the hierarchical structure and the `userId` path parameter.
+ *   No `get()` calls are needed in the rules.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Manages user profile documents.
+     * @path /users/{userId}
+     * @allow (create) User 'test_user' with ID matching {userId} can create their profile.
+     * @allow (get) User 'test_user' can read their profile.
+     * @allow (update) User 'test_user' can update their profile.
+     * @allow (delete) User 'test_user' can delete their profile.
+     * @deny (create) User 'another_user' attempts to create a profile with {userId} belonging to 'test_user'.
+     * @deny (update) User 'another_user' attempts to update 'test_user's profile.
+     * @deny (delete) User 'another_user' attempts to delete 'test_user's profile.
+     * @principle Enforces document ownership, ensuring only the authenticated user can manage their profile.
+     */
+    match /users/{userId} {
+      // Helper function to check if the user is signed in
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      // Helper function to check if the user is the owner of the document
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      //Helper function to check if the user is the owner of the document and that the document exists
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      // Allow a user to read their own profile
+      allow get: if isOwner(userId);
+
+      // Allow a user to create their own profile if the userId matches their auth uid.
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+
+      // Allow a user to update their own profile
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+
+      // Allow a user to delete their own profile
+      allow delete: if isExistingOwner(userId);
+
+      // Listing is not allowed on the root `/users` collection.
+      allow list: if false;
+    }
+
+    /**
+     * @description Manages resume files for a specific user.
+     * @path /users/{userId}/resumeFiles/{resumeFileId}
+     * @allow (create) User 'test_user' can create a resume file under their profile.
+     * @allow (get) User 'test_user' can read their resume file.
+     * @allow (update) User 'test_user' can update their resume file.
+     * @allow (delete) User 'test_user' can delete their resume file.
+     * @deny (create) User 'another_user' attempts to create a resume file under 'test_user's profile.
+     * @deny (update) User 'another_user' attempts to update 'test_user's resume file.
+     * @deny (delete) User 'another_user' attempts to delete 'test_user's resume file.
+     * @principle Enforces document ownership, restricting resume file access to the owning user.
+     */
+    match /users/{userId}/resumeFiles/{resumeFileId} {
+      // Allow reads to owners
+      allow get: if isOwner(userId);
+
+      // Allow creates to owners
+      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
+
+      // Allow updates to owners
+      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
+
+      // Allow deletes to owners
+      allow delete: if isExistingOwner(userId);
+
+      // Listing is allowed for owners
+      allow list: if isOwner(userId);
+    }
+
+    /**
+     * @description Manages cover letter templates for a specific user.
+     * @path /users/{userId}/coverLetterTemplates/{coverLetterTemplateId}
+     * @allow (create) User 'test_user' can create a cover letter template under their profile.
+     * @allow (get) User 'test_user' can read their cover letter template.
+     * @allow (update) User 'test_user' can update their cover letter template.
+     * @allow (delete) User 'test_user' can delete their cover letter template.
+     * @deny (create) User 'another_user' attempts to create a cover letter template under 'test_user's profile.
+     * @deny (update) User 'another_user' attempts to update 'test_user's cover letter template.
+     * @deny (delete) User 'another_user' attempts to delete 'test_user's cover letter template.
+     * @principle Enforces document ownership, restricting cover letter template access to the owning user.
+     */
+    match /users/{userId}/coverLetterTemplates/{coverLetterTemplateId} {
+      // Allow reads to owners
+      allow get: if isOwner(userId);
+
+      // Allow creates to owners
+      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
+
+      // Allow updates to owners
+      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
+
+      // Allow deletes to owners
+      allow delete: if isExistingOwner(userId);
+
+      // Listing is allowed for owners
+      allow list: if isOwner(userId);
+    }
+
+    /**
+     * @description Manages skill tags.
+     * @path /skillTags/{skillTagId}
+     * @allow (get) Any user can read any skill tag.
+     * @allow (list) Any user can list skill tags.
+     * @deny (create) No user can create skill tags without specific authorization (TODO).
+     * @deny (update) No user can update skill tags without specific authorization (TODO).
+     * @deny (delete) No user can delete skill tags without specific authorization (TODO).
+     * @principle Public read access for skill tags, but write access is restricted.
+     */
+    match /skillTags/{skillTagId} {
+      // Allow public read access
+      allow get, list: if true;
+
+      // Writes are denied since there is no clear owner.
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Manages job applications for a specific user.
+     * @path /users/{userId}/jobApplications/{jobApplicationId}
+     * @allow (create) User 'test_user' can create a job application under their profile.
+     * @allow (get) User 'test_user' can read their job application.
+     * @allow (update) User 'test_user' can update their job application.
+     * @allow (delete) User 'test_user' can delete their job application.
+     * @deny (create) User 'another_user' attempts to create a job application under 'test_user's profile.
+     * @deny (update) User 'another_user' attempts to update 'test_user's job application.
+     * @deny (delete) User 'another_user' attempts to delete 'test_user's job application.
+     * @principle Enforces document ownership, restricting job application access to the owning user.
+     */
+    match /users/{userId}/jobApplications/{jobApplicationId} {
+      // Allow reads to owners
+      allow get: if isOwner(userId);
+
+      // Allow creates to owners
+      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
+
+      // Allow updates to owners
+      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
+
+      // Allow deletes to owners
+      allow delete: if isExistingOwner(userId);
+
+      // Listing is allowed for owners
+      allow list: if isOwner(userId);
+    }
+
+    /**
+     * @description Manages job postings.
+     * @path /jobPostings/{jobPostingId}
+     * @allow (get) Any user can read any job posting.
+     * @allow (list) Any user can list job postings.
+     * @deny (create) No user can create job postings without specific authorization (TODO).
+     * @deny (update) No user can update job postings without specific authorization (TODO).
+     * @deny (delete) No user can delete job postings without specific authorization (TODO).
+     * @principle Public read access for job postings, but write access is restricted.
+     */
+    match /jobPostings/{jobPostingId} {
+      // Allow public read access
+      allow get, list: if true;
+
+      // Writes are denied since there is no clear owner.
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+  }
+}
