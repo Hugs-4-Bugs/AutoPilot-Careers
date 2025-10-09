@@ -25,7 +25,7 @@ const featuresList = [
 export function Features() {
   return (
     <section id="features" className="bg-card py-16 md:py-24">
-      <div className="container max-w-7xl">
+      <div className="container mx-auto max-w-7xl px-4 md:px-6">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
             A Smarter Way to Get Hired

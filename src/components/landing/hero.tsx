@@ -8,7 +8,7 @@ export function Hero() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero');
 
   return (
-    <section className="container grid max-w-7xl grid-cols-1 items-center gap-12 py-12 md:grid-cols-2 md:gap-16 md:py-24">
+    <section className="container grid max-w-7xl grid-cols-1 items-center gap-12 px-4 py-12 md:grid-cols-2 md:gap-16 md:px-6 md:py-24">
       <div className="flex flex-col items-center gap-6 text-center md:items-start md:text-left">
         <h1 className="text-4xl font-extrabold tracking-tighter md:text-5xl lg:text-6xl">
           Your Job Search on AutoPilot

@@ -1,5 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -18,14 +25,28 @@ const pricingTiers = [
     isPrimary: false,
   },
   {
+    name: 'Starter',
+    price: '$10',
+    period: '/ month',
+    description: 'Perfect for a more active search.',
+    features: [
+      '25 Automated Applications / week',
+      'Advanced Resume Optimization',
+      'Limited AI Cover Letters',
+      'Standard Job Search Filters',
+    ],
+    cta: 'Get Started',
+    isPrimary: false,
+  },
+  {
     name: 'Pro',
     price: '$29',
     period: '/ month',
     description: 'For professionals who want to accelerate their job search.',
     features: [
-      '50 Automated Applications / week',
+      '100 Automated Applications / week',
       'Advanced Resume Optimization',
-      'AI Cover Letter Generation',
+      'Unlimited AI Cover Letters',
       'Unlimited Job Search Filters',
       'Priority Support',
     ],
@@ -60,17 +81,21 @@ export function Pricing() {
             Simple, transparent pricing. No hidden fees.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {pricingTiers.map((tier) => (
             <Card
               key={tier.name}
-              className={`flex flex-col ${tier.isPrimary ? 'border-primary ring-2 ring-primary' : ''}`}
+              className={`flex flex-col ${
+                tier.isPrimary ? 'border-primary ring-2 ring-primary' : ''
+              }`}
             >
               <CardHeader>
                 <CardTitle className="text-2xl">{tier.name}</CardTitle>
                 <div className="flex items-baseline">
                   <span className="text-4xl font-bold">{tier.price}</span>
-                  {tier.period && <span className="text-muted-foreground">{tier.period}</span>}
+                  {tier.period && (
+                    <span className="text-muted-foreground">{tier.period}</span>
+                  )}
                 </div>
                 <CardDescription>{tier.description}</CardDescription>
               </CardHeader>
