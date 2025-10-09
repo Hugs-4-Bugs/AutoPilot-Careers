@@ -15,11 +15,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { MainNav } from './main-nav';
-import { useAuth } from '@/firebase/auth/provider';
+import { useUser } from '@/firebase';
 import { signOut } from '@/firebase/auth/auth';
 
 export function Header() {
-  const { user } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
 
   const handleSignOut = async () => {

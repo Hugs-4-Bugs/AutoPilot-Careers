@@ -11,9 +11,9 @@ import {
   onAuthStateChanged as firebaseOnAuthStateChanged,
   type User,
 } from 'firebase/auth';
-import { firebaseApp } from '../config';
+import { initializeFirebase } from '@/firebase';
 
-const auth = getAuth(firebaseApp);
+const { auth } = initializeFirebase();
 const googleProvider = new GoogleAuthProvider();
 
 export const signUpWithEmailAndPassword = async (email: string, password: string) => {
@@ -22,7 +22,7 @@ export const signUpWithEmailAndPassword = async (email: string, password: string
   return userCredential;
 };
 
-export const signInWithEmailAndPassword = (email: string, password: string) => {
+export const signInWithEmailAndPassword = (email: string, password:string) => {
   return firebaseSignIn(auth, email, password);
 };
 
