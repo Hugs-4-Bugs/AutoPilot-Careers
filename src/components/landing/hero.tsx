@@ -8,12 +8,12 @@ export function Hero() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero');
 
   return (
-    <section className="container grid max-w-7xl grid-cols-1 items-center gap-12 py-12 md:grid-cols-2 md:py-24">
-      <div className="flex flex-col items-start gap-6">
+    <section className="container grid max-w-7xl grid-cols-1 items-center gap-12 py-12 md:grid-cols-2 md:gap-16 md:py-24">
+      <div className="flex flex-col items-center gap-6 text-center md:items-start md:text-left">
         <h1 className="text-4xl font-extrabold tracking-tighter md:text-5xl lg:text-6xl">
           Your Job Search on AutoPilot
         </h1>
-        <p className="text-lg text-muted-foreground md:text-xl">
+        <p className="max-w-[600px] text-lg text-muted-foreground md:text-xl">
           Stop wasting time on repetitive applications. Our AI-powered platform
           finds and applies to the best jobs for you, so you can focus on what
           matters: acing the interview.
@@ -31,14 +31,13 @@ export function Hero() {
           </Button>
         </div>
       </div>
-      <div className="overflow-hidden rounded-xl shadow-2xl">
+      <div className="relative mx-auto h-[300px] w-[300px] overflow-hidden rounded-xl shadow-2xl md:h-[500px] md:w-[500px]">
         {heroImage && (
           <Image
             src={heroImage.imageUrl}
             alt={heroImage.description}
-            width={1200}
-            height={800}
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
             data-ai-hint={heroImage.imageHint}
             priority
           />

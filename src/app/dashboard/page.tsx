@@ -51,24 +51,28 @@ const recentApplications = [
   {
     role: 'Senior Product Manager',
     company: 'Innovate Inc.',
+    platform: 'LinkedIn',
     status: 'Applied',
     date: '2024-05-23',
   },
   {
     role: 'UX Designer',
     company: 'Creative Solutions',
+    platform: 'Indeed',
     status: 'Interview',
     date: '2024-05-22',
   },
   {
     role: 'Frontend Developer',
     company: 'Tech Giants LLC',
+    platform: 'LinkedIn',
     status: 'Applied',
     date: '2024-05-21',
   },
   {
     role: 'Data Scientist',
     company: 'Analytics Co.',
+    platform: 'Naukri',
     status: 'Rejected',
     date: '2024-05-20',
   },
@@ -113,6 +117,7 @@ export default function DashboardPage() {
                 <TableRow>
                   <TableHead>Role</TableHead>
                   <TableHead>Company</TableHead>
+                  <TableHead>Platform</TableHead>
                   <TableHead className="text-right">Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -123,6 +128,9 @@ export default function DashboardPage() {
                       <div className="font-medium">{app.role}</div>
                     </TableCell>
                     <TableCell>{app.company}</TableCell>
+                    <TableCell>
+                      <div className="font-medium">{app.platform}</div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <Badge
                         variant={
@@ -150,7 +158,7 @@ export default function DashboardPage() {
               Response rates from different job platforms.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-8">
+          <CardContent className="grid gap-6">
             <div className="flex items-center gap-4">
               <Avatar className="hidden h-9 w-9 sm:flex">
                 <AvatarImage src="/avatars/01.png" alt="LinkedIn" />
@@ -183,7 +191,7 @@ export default function DashboardPage() {
                 <AvatarFallback>NA</AvatarFallback>
               </Avatar>
               <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Naukri</p>
+                <p className="text-sm font-medium leading-one">Naukri</p>
                 <p className="text-sm text-muted-foreground">
                   5% response rate
                 </p>
