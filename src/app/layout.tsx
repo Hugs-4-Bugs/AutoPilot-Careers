@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
+import { FirebaseProvider } from '@/firebase/auth/provider';
 
 export const metadata: Metadata = {
   title: 'AutoPilot Careers',
@@ -30,8 +31,10 @@ export default function RootLayout({
       <body
         className={cn('min-h-screen bg-background font-body antialiased')}
       >
-        {children}
-        <Toaster />
+        <FirebaseProvider>
+          {children}
+          <Toaster />
+        </FirebaseProvider>
       </body>
     </html>
   );
