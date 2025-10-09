@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, User, Settings, Bot, BadgeDollarSign } from 'lucide-react';
+import {
+  Home,
+  User,
+  Settings,
+  Bot,
+  BadgeDollarSign,
+  Briefcase,
+} from 'lucide-react';
 import { Logo } from '../logo';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +17,8 @@ import { Badge } from '@/components/ui/badge';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
-   { href: '/dashboard/pricing', label: 'Pricing', icon: BadgeDollarSign },
+  { href: '/dashboard/applications', label: 'Applications', icon: Briefcase },
+  { href: '/dashboard/pricing', label: 'Pricing', icon: BadgeDollarSign },
   {
     href: '/dashboard/ai-tools',
     label: 'AI Tools',
@@ -40,13 +48,16 @@ export function MainNav({ isMobile = false }: { isMobile?: boolean }) {
             isMobile && 'px-4'
           )}
         >
-          {navItems.map((item) => (
+          {navItems.map(item => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
-                (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && 'bg-muted text-primary'
+                (pathname === item.href ||
+                  (item.href !== '/dashboard' &&
+                    pathname.startsWith(item.href))) &&
+                  'bg-muted text-primary'
               )}
             >
               <item.icon className="h-4 w-4" />
