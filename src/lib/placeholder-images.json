@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "A person working on a laptop in a modern office, symbolizing productivity and career focus.",
+      "imageUrl": "https://picsum.photos/seed/hero/1200/800",
+      "imageHint": "professional workspace"
+    },
+    {
+      "id": "feature-resume",
+      "description": "An illustration of a resume document being automatically tailored.",
+      "imageUrl": "https://picsum.photos/seed/resume/600/400",
+      "imageHint": "document resume"
+    },
+    {
+      "id": "feature-search",
+      "description": "An illustration of a magnifying glass over a map, representing automated job searching.",
+      "imageUrl": "https://picsum.photos/seed/search/600/400",
+      "imageHint": "job search"
+    },
+    {
+      "id": "feature-apply",
+      "description": "An illustration of a robot arm clicking a button, representing automated applications.",
+      "imageUrl": "https://picsum.photos/seed/apply/600/400",
+      "imageHint": "robot automation"
+    }
+  ]
 }
