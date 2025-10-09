@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +26,7 @@ const pricingTiers = [
       'Limited Job Search Filters',
     ],
     cta: 'Select Plan',
+    isPaid: false,
   },
   {
     name: 'Starter',
@@ -40,6 +40,7 @@ const pricingTiers = [
       'Standard Job Search Filters',
     ],
     cta: 'Select Plan',
+    isPaid: true,
   },
   {
     name: 'Pro',
@@ -54,6 +55,7 @@ const pricingTiers = [
       'Priority Support',
     ],
     cta: 'Select Plan',
+    isPaid: true,
   },
 ];
 
@@ -61,10 +63,16 @@ export default function PricingPage() {
   const [selectedTier, setSelectedTier] = useState('Pro');
   const router = useRouter();
 
-  const handleSelectPlan = () => {
-    // Here you would typically handle the subscription logic
-    // For now, we will just redirect to the profile page
-    router.push('/dashboard/profile');
+  const handleSelectPlan = (isPaid: boolean) => {
+    if (isPaid) {
+      // In a real app, you'd redirect to a payment gateway like Stripe.
+      // For now, we will simulate this by just moving to the profile page.
+      alert('This would redirect to a payment provider.');
+      router.push('/dashboard/profile');
+    } else {
+      // For free plans, go directly to the profile page.
+      router.push('/dashboard/profile');
+    }
   };
 
   return (
@@ -74,7 +82,7 @@ export default function PricingPage() {
           Find the Plan That's Right for You
         </h2>
         <p className="mt-4 text-lg text-muted-foreground">
-          Simple, transparent pricing. No hidden fees.
+          Choose a plan to get started. You can always upgrade later.
         </p>
       </div>
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
@@ -113,7 +121,8 @@ export default function PricingPage() {
               <Button
                 className="w-full"
                 variant={selectedTier === tier.name ? 'default' : 'outline'}
-                onClick={handleSelectPlan}
+                onClick={() => handleSelectPlan(tier.isPaid)}
+                disabled={selectedTier !== tier.name}
               >
                 {tier.cta}
               </Button>

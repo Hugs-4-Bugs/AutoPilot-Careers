@@ -32,10 +32,20 @@ export default function DashboardLayout({
   }, [user, isUserLoading, router]);
 
   useEffect(() => {
-    if (user && !isProfileLoading && !userProfile?.firstName && pathname !== '/dashboard/profile') {
+    // If we're still loading profile, don't do anything yet.
+    if (isProfileLoading || isUserLoading) return;
+    
+    // If the user is on the pricing page, let them stay there.
+    if (pathname === '/dashboard/pricing') {
+        return;
+    }
+
+    // If the profile isn't complete, force redirect to profile page.
+    if (user && !userProfile?.firstName && pathname !== '/dashboard/profile') {
       router.push('/dashboard/profile');
     }
-  }, [user, userProfile, isProfileLoading, pathname, router]);
+
+  }, [user, userProfile, isProfileLoading, isUserLoading, pathname, router]);
 
   if (isUserLoading || (user && isProfileLoading)) {
     return (
