@@ -1,3 +1,7 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,6 +24,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 export default function SettingsPage() {
+  const [isExtensionConnected, setIsExtensionConnected] = useState(false);
+
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-6">
       <div className="grid gap-6">
@@ -38,7 +44,10 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="location">Location Preferences</Label>
-                <Input id="location" defaultValue="Remote, San Francisco, New York" />
+                <Input
+                  id="location"
+                  defaultValue="Remote, San Francisco, New York"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="salary">Minimum Salary Expectation (USD)</Label>
@@ -72,9 +81,13 @@ export default function SettingsPage() {
                   <SelectValue placeholder="Select a rate" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="conservative">Conservative (~5/day)</SelectItem>
+                  <SelectItem value="conservative">
+                    Conservative (~5/day)
+                  </SelectItem>
                   <SelectItem value="balanced">Balanced (~15/day)</SelectItem>
-                  <SelectItem value="aggressive">Aggressive (~30/day)</SelectItem>
+                  <SelectItem value="aggressive">
+                    Aggressive (~30/day)
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
@@ -82,14 +95,51 @@ export default function SettingsPage() {
               </p>
             </div>
             <div className="space-y-2">
-                <Label>Browser Extension</Label>
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div>
-                        <p className="font-medium">Chrome Extension Status</p>
-                        <p className="text-sm text-muted-foreground">Connected and authorized.</p>
-                    </div>
-                    <Button variant="outline">Manage Sites</Button>
+              <Label>Browser Extension</Label>
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                {isExtensionConnected ? (
+                  <div>
+                    <p className="font-medium text-primary">
+                      Chrome Extension Status: Connected
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      AutoPilot is ready to apply for jobs.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="font-medium text-destructive-foreground">
+                      Chrome Extension Status: Not Connected
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Install and connect the extension to start applying.
+                    </p>
+                  </div>
+                )}
+                <div>
+                  {!isExtensionConnected ? (
+                    <Button
+                      variant="outline"
+                      asChild
+                      className="mr-2"
+                    >
+                      <Link
+                        href="https://chromewebstore.google.com/"
+                        target="_blank"
+                      >
+                        Add to Chrome
+                      </Link>
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsExtensionConnected(true)}
+                    disabled={isExtensionConnected}
+                  >
+                    {isExtensionConnected ? 'Manage Sites' : 'Connect Extension'}
+                  </Button>
                 </div>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
