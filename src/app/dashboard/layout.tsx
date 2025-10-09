@@ -23,7 +23,7 @@ export default function DashboardLayout({
     [firestore, user]
   );
 
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userProfileRef);
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<{plan?: string, firstName?: string}>(userProfileRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -33,16 +33,18 @@ export default function DashboardLayout({
 
   useEffect(() => {
     // If we're still loading profile, don't do anything yet.
-    if (isProfileLoading || isUserLoading) return;
+    if (isProfileLoading || isUserLoading || !user) return;
     
-    // If the user is on the pricing page, let them stay there.
-    if (pathname === '/dashboard/pricing') {
-        return;
+    // If user has no plan, force redirect to pricing page.
+    if (!userProfile?.plan && pathname !== '/dashboard/pricing') {
+      router.push('/dashboard/pricing');
+      return;
     }
-
-    // If the profile isn't complete, force redirect to profile page.
-    if (user && !userProfile?.firstName && pathname !== '/dashboard/profile') {
+    
+    // If user has a plan but no first name, force redirect to profile page.
+    if (userProfile?.plan && !userProfile?.firstName && pathname !== '/dashboard/profile') {
       router.push('/dashboard/profile');
+      return;
     }
 
   }, [user, userProfile, isProfileLoading, isUserLoading, pathname, router]);

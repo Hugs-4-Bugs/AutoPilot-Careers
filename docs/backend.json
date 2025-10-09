@@ -48,6 +48,10 @@
           "type": "string",
           "description": "URL to user's GitHub or portfolio.",
           "format": "uri"
+        },
+        "plan": {
+          "type": "string",
+          "description": "The user's selected subscription plan (e.g., 'Free', 'Pro')."
         }
       },
       "required": [

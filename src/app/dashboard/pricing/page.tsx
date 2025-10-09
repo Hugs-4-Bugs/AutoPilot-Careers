@@ -11,8 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 const pricingTiers = [
   {
@@ -61,17 +64,50 @@ const pricingTiers = [
 
 export default function PricingPage() {
   const [selectedTier, setSelectedTier] = useState('Pro');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const { toast } = useToast();
 
-  const handleSelectPlan = (isPaid: boolean) => {
-    if (isPaid) {
-      // In a real app, you'd redirect to a payment gateway like Stripe.
-      // For now, we will simulate this by just moving to the profile page.
-      alert('This would redirect to a payment provider.');
+  const handleSelectPlan = async (tier: (typeof pricingTiers)[0]) => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Not Logged In',
+        description: 'You need to be logged in to select a plan.',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    const userProfileRef = doc(firestore, 'users', user.uid);
+
+    try {
+      setDocumentNonBlocking(userProfileRef, { plan: tier.name }, { merge: true });
+
+      if (tier.isPaid) {
+        // In a real app, you'd redirect to a payment gateway like Stripe.
+        // For now, we will simulate this by just moving to the profile page.
+        alert('This would redirect to a payment provider.');
+      }
+      
+      toast({
+        title: 'Plan Selected!',
+        description: `You are now on the ${tier.name} plan.`,
+      });
+
       router.push('/dashboard/profile');
-    } else {
-      // For free plans, go directly to the profile page.
-      router.push('/dashboard/profile');
+    } catch (error) {
+      console.error('Failed to update plan:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Update Failed',
+        description: 'Could not save your plan selection. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,7 +131,7 @@ export default function PricingPage() {
                 ? 'border-primary ring-2 ring-primary'
                 : 'hover:scale-105'
             )}
-            onClick={() => setSelectedTier(tier.name)}
+            onClick={() => !isLoading && setSelectedTier(tier.name)}
           >
             <CardHeader>
               <CardTitle className="text-2xl">{tier.name}</CardTitle>
@@ -121,10 +157,14 @@ export default function PricingPage() {
               <Button
                 className="w-full"
                 variant={selectedTier === tier.name ? 'default' : 'outline'}
-                onClick={() => handleSelectPlan(tier.isPaid)}
-                disabled={selectedTier !== tier.name}
+                onClick={() => handleSelectPlan(tier)}
+                disabled={isLoading || selectedTier !== tier.name}
               >
-                {tier.cta}
+                {isLoading && selectedTier === tier.name ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  tier.cta
+                )}
               </Button>
             </CardFooter>
           </Card>
