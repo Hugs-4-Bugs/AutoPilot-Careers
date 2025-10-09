@@ -1,11 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { useUser } from '@/firebase';
+import { useUser, useDoc } from '@/firebase';
+import { useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { Header } from '@/components/dashboard/header';
 import { MainNav } from '@/components/dashboard/main-nav';
 import { Loader2 } from 'lucide-react';
+import { useMemoFirebase } from '@/firebase';
 
 export default function DashboardLayout({
   children,
@@ -14,12 +17,27 @@ export default function DashboardLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(
+    () => (user ? doc(firestore, 'users', user.uid) : null),
+    [firestore, user]
+  );
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userProfileRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/login');
     }
   }, [user, isUserLoading, router]);
+
+  useEffect(() => {
+    if (user && !isProfileLoading && !userProfile?.firstName && pathname !== '/dashboard/profile') {
+      router.push('/dashboard/profile');
+    }
+  }, [user, userProfile, isProfileLoading, pathname, router]);
 
   if (isUserLoading || !user) {
     return (

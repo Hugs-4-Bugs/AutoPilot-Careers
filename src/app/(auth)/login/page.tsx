@@ -7,8 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   signInWithEmailAndPassword,
-  signInWithGoogle,
 } from '@/firebase/auth/auth';
+import { useAuth } from '@/firebase';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +20,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import {
   Form,
@@ -42,6 +42,8 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setGoogleLoading] = useState(false);
+  const auth = useAuth();
+  const googleProvider = new GoogleAuthProvider();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,7 +56,7 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(values.email, values.password);
+      await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push('/dashboard');
     } catch (error: any) {
       toast({
@@ -70,7 +72,7 @@ export default function LoginPage() {
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     try {
-      await signInWithGoogle();
+      await signInWithPopup(auth, googleProvider);
       router.push('/dashboard');
     } catch (error: any) {
       toast({

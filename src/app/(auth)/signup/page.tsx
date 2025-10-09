@@ -5,7 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signUpWithEmailAndPassword, signInWithGoogle } from '@/firebase/auth/auth';
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from 'firebase/auth';
+import { useAuth } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,7 +24,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import {
   Form,
@@ -46,6 +53,10 @@ export default function SignupPage() {
   const [isGoogleLoading, setGoogleLoading] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
 
+  const auth = useAuth();
+  const firestore = useFirestore();
+  const googleProvider = new GoogleAuthProvider();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,7 +70,22 @@ export default function SignupPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signUpWithEmailAndPassword(values.email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      const user = userCredential.user;
+
+      const userProfileRef = doc(firestore, 'users', user.uid);
+      await setDoc(userProfileRef, {
+        id: user.uid,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: user.email,
+      });
+
+      await sendEmailVerification(user);
       setShowVerification(true);
     } catch (error: any) {
       toast({
@@ -75,8 +101,22 @@ export default function SignupPage() {
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     try {
-      await signInWithGoogle();
-      router.push('/dashboard');
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const user = userCredential.user;
+      const userProfileRef = doc(firestore, 'users', user.uid);
+      const [firstName, lastName] = user.displayName?.split(' ') || ['', ''];
+
+      await setDoc(
+        userProfileRef,
+        {
+          id: user.uid,
+          firstName: firstName,
+          lastName: lastName,
+          email: user.email,
+        },
+        { merge: true }
+      );
+      router.push('/dashboard/profile');
     } catch (error: any) {
       toast({
         variant: 'destructive',
