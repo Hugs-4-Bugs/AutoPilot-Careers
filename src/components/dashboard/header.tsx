@@ -23,7 +23,7 @@ export function Header() {
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col p-0">
+        <SheetContent side="left" className="flex flex-col p-0 max-w-[280px]">
           <MainNav isMobile={true} />
         </SheetContent>
       </Sheet>

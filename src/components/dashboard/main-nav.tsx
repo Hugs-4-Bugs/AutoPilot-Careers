@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, User, Settings, Bot } from 'lucide-react';
+import { Home, User, Settings, Bot, BadgeDollarSign } from 'lucide-react';
 import { Logo } from '../logo';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
