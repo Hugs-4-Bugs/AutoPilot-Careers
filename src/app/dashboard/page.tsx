@@ -1,13 +1,14 @@
+'use client';
+
 import {
-  Activity,
   ArrowUpRight,
   Briefcase,
   CheckCircle2,
   Mail,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,87 +26,100 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-const stats = [
-  {
-    title: 'Applications Sent',
-    value: '132',
-    change: '+12.5%',
-    icon: Mail,
-  },
-  {
-    title: 'Interviews Scheduled',
-    value: '8',
-    change: '+20%',
-    icon: CheckCircle2,
-  },
-  {
-    title: 'Active Searches',
-    value: '4',
-    change: '2 new today',
-    icon: Briefcase,
-  },
-];
-
-const recentApplications = [
-  {
-    role: 'Senior Product Manager',
-    company: 'Innovate Inc.',
-    platform: 'LinkedIn',
-    status: 'Applied',
-    date: '2024-05-23',
-  },
-  {
-    role: 'UX Designer',
-    company: 'Creative Solutions',
-    platform: 'Indeed',
-    status: 'Interview',
-    date: '2024-05-22',
-  },
-  {
-    role: 'Frontend Developer',
-    company: 'Tech Giants LLC',
-    platform: 'LinkedIn',
-    status: 'Applied',
-    date: '2024-05-21',
-  },
-  {
-    role: 'Data Scientist',
-    company: 'Analytics Co.',
-    platform: 'Naukri',
-    status: 'Rejected',
-    date: '2024-05-20',
-  },
-];
+import {
+  useUser,
+  useFirestore,
+  useCollection,
+  useMemoFirebase,
+} from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useMemo } from 'react';
 
 export default function DashboardPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const applicationsRef = useMemoFirebase(
+    () => (user ? collection(firestore, 'users', user.uid, 'jobApplications') : null),
+    [firestore, user]
+  );
+  
+  const recentApplicationsQuery = useMemoFirebase(
+    () => (applicationsRef ? query(applicationsRef, orderBy('applicationDate', 'desc'), limit(5)) : null),
+    [applicationsRef]
+  );
+
+  const allApplicationsQuery = useMemoFirebase(
+    () => (applicationsRef ? query(applicationsRef, orderBy('applicationDate', 'desc')) : null),
+    [applicationsRef]
+  );
+
+  const { data: recentApplications, isLoading: isLoadingRecent } = useCollection(recentApplicationsQuery);
+  const { data: allApplications, isLoading: isLoadingAll } = useCollection(allApplicationsQuery);
+
+  const stats = useMemo(() => {
+    if (!allApplications) {
+      return [
+        { title: 'Applications Sent', value: '0', icon: Mail },
+        { title: 'Interviews Scheduled', value: '0', icon: CheckCircle2 },
+        { title: 'Active Searches', value: '0', icon: Briefcase },
+      ];
+    }
+    const totalSent = allApplications.length;
+    const interviews = allApplications.filter(app => app.status === 'Interviewing').length;
+    const offers = allApplications.filter(app => app.status === 'Offer').length;
+
+    return [
+      { title: 'Applications Sent', value: totalSent.toString(), icon: Mail },
+      { title: 'Interviews Scheduled', value: interviews.toString(), icon: CheckCircle2 },
+      { title: 'Offers Received', value: offers.toString(), icon: Briefcase },
+    ];
+  }, [allApplications]);
+  
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'Interviewing':
+        return 'default';
+      case 'Offer':
+        return 'default';
+      case 'Rejected':
+        return 'destructive';
+      case 'Applied':
+      default:
+        return 'secondary';
+    }
+  };
+
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        {stats.map((stat) => (
+        {stats.map(stat => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
               <stat.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.change}</p>
+              {isLoadingAll ? (
+                 <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                <div className="text-2xl font-bold">{stat.value}</div>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+        <Card className="xl:col-span-3">
           <CardHeader className="flex flex-row items-center">
             <div className="grid gap-2">
               <CardTitle>Recent Applications</CardTitle>
               <CardDescription>
-                A log of your recent automated job applications.
+                A log of your 5 most recent job applications.
               </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
-              <Link href="#">
+              <Link href="/dashboard/applications">
                 View All
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
@@ -122,82 +136,41 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentApplications.map((app) => (
-                  <TableRow key={app.role + app.company}>
-                    <TableCell>
-                      <div className="font-medium">{app.role}</div>
-                    </TableCell>
-                    <TableCell>{app.company}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">{app.platform}</div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge
-                        variant={
-                          app.status === 'Interview'
-                            ? 'default'
-                            : app.status === 'Rejected'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
-                        className="capitalize"
-                      >
-                        {app.status}
-                      </Badge>
+                {isLoadingRecent ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                       <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : recentApplications && recentApplications.length > 0 ? (
+                  recentApplications.map(app => (
+                    <TableRow key={app.id}>
+                      <TableCell>
+                        <div className="font-medium">{app.jobTitle}</div>
+                      </TableCell>
+                      <TableCell>{app.company}</TableCell>
+                      <TableCell>
+                        <div className="font-medium">{app.platform}</div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge
+                          variant={getStatusVariant(app.status)}
+                          className="capitalize"
+                        >
+                          {app.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                   <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      No recent applications found.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Application Health</CardTitle>
-            <CardDescription>
-              Response rates from different job platforms.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="hidden h-9 w-9 sm:flex">
-                <AvatarImage src="/avatars/01.png" alt="LinkedIn" />
-                <AvatarFallback>LI</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">LinkedIn</p>
-                <p className="text-sm text-muted-foreground">
-                  12% response rate
-                </p>
-              </div>
-              <div className="ml-auto font-medium">+15 apps</div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Avatar className="hidden h-9 w-9 sm:flex">
-                <AvatarImage src="/avatars/02.png" alt="Indeed" />
-                <AvatarFallback>IN</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Indeed</p>
-                <p className="text-sm text-muted-foreground">
-                  8% response rate
-                </p>
-              </div>
-              <div className="ml-auto font-medium">+25 apps</div>
-            </div>
-             <div className="flex items-center gap-4">
-              <Avatar className="hidden h-9 w-9 sm:flex">
-                <AvatarImage src="/avatars/03.png" alt="Naukri" />
-                <AvatarFallback>NA</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium leading-one">Naukri</p>
-                <p className="text-sm text-muted-foreground">
-                  5% response rate
-                </p>
-              </div>
-              <div className="ml-auto font-medium">+40 apps</div>
-            </div>
           </CardContent>
         </Card>
       </div>
