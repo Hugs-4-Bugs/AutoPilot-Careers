@@ -1,20 +1,41 @@
 # AutoPilot Careers
 
-This is a Next.js application for AutoPilot Careers, a job-application automation platform.
+Your personal AI-powered agent for automating the job search and application process. Stop wasting time on repetitive tasks and let AutoPilot Careers find and apply to the best jobs for you.
 
 ## Overview
 
-AutoPilot Careers helps users automate their job search and application process. Users can manage their profile, upload resumes, define job search criteria, and leverage AI tools to tailor their applications.
+AutoPilot Careers is a full-stack SaaS application designed to streamline and accelerate the job search for professionals. It combines a user-friendly dashboard with powerful AI tools to manage profiles, track applications, and optimize application materials. The core vision is to pair this web platform with a browser extension that fully automates the job application process from start to finish.
 
-This repository contains the frontend web application built with Next.js and shadcn/ui.
+This repository contains the Next.js web application that serves as the central hub for the user.
+
+## Core Features
+
+- **User Profile Management**: A comprehensive user profile to store all necessary information for job applications, including personal details, professional experience, skills, and social links (LinkedIn, GitHub).
+- **Job Application Tracking**: A complete system to manually log and track the status of every job application. View all applications in a centralized dashboard, with details like company, platform, date applied, and current status (Applied, Interviewing, Offer, Rejected).
+- **Subscription Tiers**: A built-in pricing page with different subscription plans (Free, Pro). User plan selection is saved to their profile, allowing for future feature-gating.
+- **AI-Powered Resume Optimizer**: Analyze a job description against your resume and receive AI-generated suggestions to improve keywords, phrasing, and increase your match score.
+- **AI-Powered Cover Letter Tailor**: Automatically generate a tailored cover letter for a specific job by providing a job description, your resume, and a base cover letter template.
+- **Automated Application Backend**: A secure Genkit flow (`applyToJob`) serves as the "API" endpoint for a browser extension. It orchestrates the AI tools to prepare all materials needed for an application.
+- **Settings & Preferences**: Configure job search preferences (keywords, location) and application settings. The UI is ready to connect with a browser extension.
+- **Secure Authentication**: Robust user authentication system using Firebase, supporting both email/password and Google Sign-In.
 
 ## Tech Stack
 
-- **Framework**: Next.js (App Router)
-- **Language**: TypeScript
-- **UI**: React, Tailwind CSS, shadcn/ui
-- **AI**: Genkit with Google Gemini
-- **Forms**: React Hook Form, Zod
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **UI Components**:
+    - [React](https://react.dev/)
+    - [shadcn/ui](https://ui.shadcn.com/): Beautifully designed, accessible components.
+    - [Tailwind CSS](https://tailwindcss.com/): For styling and layout.
+    - [Lucide React](https://lucide.dev/): For icons.
+- **AI & Backend**:
+    - [Genkit](https://firebase.google.com/docs/genkit): The AI framework used to create and manage backend flows.
+    - [Google Gemini](https://ai.google.dev/): The generative model powering the AI features.
+- **Database**: [Google Firestore](https://firebase.google.com/docs/firestore): A NoSQL database for storing user profiles and job applications.
+- **Authentication**: [Firebase Authentication](https://firebase.google.com/docs/auth): Handles secure user login and session management.
+- **Forms**:
+    - [React Hook Form](https://react-hook-form.com/): For performant and flexible form state management.
+    - [Zod](https://zod.dev/): For schema validation.
 
 ## Getting Started
 
@@ -46,30 +67,32 @@ This repository contains the frontend web application built with Next.js and sha
 
 ### Running the Development Server
 
-To run the application in development mode, use the following command:
+You need to run two separate processes for the full application to work.
+
+1.  **Run the Next.js Web App:**
+    This starts the frontend and the main server.
+    ```bash
+    npm run dev
+    ```
+    The application will be available at `http://localhost:9002`.
+
+2.  **Run the Genkit Developer UI:**
+    This allows you to inspect, test, and debug your AI flows separately.
+    ```bash
+    npm run genkit:watch
+    ```
+    The Genkit UI will be available at `http://localhost:4000`.
+
+## Deployment
+
+This application is configured for seamless deployment on **Firebase App Hosting**. It is the recommended platform due to its native integration with Firebase services (Auth, Firestore) and Genkit.
+
+The `apphosting.yaml` file is already present and configured. To deploy, you would typically use the Firebase CLI.
 
 ```bash
-npm run dev
+# First, build the application for production
+npm run build
+
+# Then, deploy using the Firebase CLI (requires setup)
+firebase apphosting:backends:deploy
 ```
-
-This will start the Next.js development server, typically on `http://localhost:9002`.
-
-The Genkit flows are also available and can be tested via the Genkit developer UI. To run it, use:
-```bash
-npm run genkit:watch
-```
-This will start the Genkit development server, typically on `http://localhost:4000`.
-
-## Project Structure
-
-- `src/app/`: Contains all the routes and pages for the application.
-  - `(auth)/`: Auth-related pages (Login, Signup).
-  - `dashboard/`: Protected routes for the user dashboard.
-  - `page.tsx`: The main landing page.
-- `src/components/`: Reusable React components.
-  - `ui/`: Components from shadcn/ui.
-  - `dashboard/`: Components specific to the dashboard.
-  - `landing/`: Components for the marketing/landing page.
-- `src/ai/`: Contains Genkit flows for AI features.
-- `src/lib/`: Utility functions and shared libraries.
-- `public/`: Static assets.
