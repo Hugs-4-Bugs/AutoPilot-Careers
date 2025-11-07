@@ -36,7 +36,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -64,6 +64,7 @@ export default function SignupPage() {
   const [showVerification, setShowVerification] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [showOtpInput, setShowOtpInput] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const auth = useAuth();
   const firestore = useFirestore();
@@ -142,8 +143,7 @@ export default function SignupPage() {
       try {
         let formattedPhone = values.phone;
         if (!formattedPhone.startsWith('+')) {
-          // Assuming Indian country code if not provided
-          formattedPhone = `+91${formattedPhone}`;
+          formattedPhone = `+91${formattedPhone.replace(/\s/g, '')}`;
         }
         const verifier = window.recaptchaVerifier;
         const result = await signInWithPhoneNumber(auth, formattedPhone, verifier);
@@ -321,7 +321,16 @@ export default function SignupPage() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <div className="relative">
+                           <Input type={showPassword ? "text" : "password"} {...field} />
+                           <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
