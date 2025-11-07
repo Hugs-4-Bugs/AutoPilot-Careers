@@ -140,8 +140,13 @@ export default function SignupPage() {
 
     if (!showOtpInput) {
       try {
+        let formattedPhone = values.phone;
+        if (!formattedPhone.startsWith('+')) {
+          // Assuming Indian country code if not provided
+          formattedPhone = `+91${formattedPhone}`;
+        }
         const verifier = window.recaptchaVerifier;
-        const result = await signInWithPhoneNumber(auth, values.phone, verifier);
+        const result = await signInWithPhoneNumber(auth, formattedPhone, verifier);
         setConfirmationResult(result);
         setShowOtpInput(true);
         toast({
@@ -340,7 +345,7 @@ export default function SignupPage() {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="+1 123 456 7890" {...field} />
+                          <Input placeholder="+91 123 456 7890" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
