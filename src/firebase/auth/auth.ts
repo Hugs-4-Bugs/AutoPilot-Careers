@@ -9,6 +9,9 @@ import {
   signOut as firebaseSignOut,
   sendEmailVerification,
   onAuthStateChanged,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  type ConfirmationResult,
   type User,
   Auth,
 } from 'firebase/auth';
@@ -19,6 +22,9 @@ export {
   GoogleAuthProvider,
   signInWithPopup,
   onAuthStateChanged,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  type ConfirmationResult,
   type User,
 };
 

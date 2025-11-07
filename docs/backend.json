@@ -56,8 +56,6 @@
       },
       "required": [
         "id",
-        "firstName",
-        "lastName",
         "email"
       ]
     },
@@ -105,7 +103,8 @@
   "auth": {
     "providers": [
       "password",
-      "google.com"
+      "google.com",
+      "phone"
     ]
   },
   "firestore": {
