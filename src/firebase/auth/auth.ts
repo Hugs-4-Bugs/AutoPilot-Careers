@@ -8,7 +8,7 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   sendEmailVerification,
-  onAuthStateChanged as firebaseOnAuthStateChanged,
+  onAuthStateChanged,
   type User,
   Auth,
 } from 'firebase/auth';
